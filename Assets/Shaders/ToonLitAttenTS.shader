@@ -53,11 +53,17 @@ Shader "Custom/Toon Lit Atten -TS" {
 			
 			// Modified as per user kebrus in this thread: https://forum.unity3d.com/threads/toon-shader-light-shadows.252952/
 			half d = (dot (s.Normal, lightDir)*0.5 + 0.5) * atten;
+			
+
+			if(d < _ShadowMaskThreshold){
+				d = (tex2D(_ShadowTex, s.screenUV)).rgb;
+			}else d = 1;
+
 			half3 ramp = tex2D (_Ramp, float2(d,d)).rgb;
 
 			
 			half4 c;
-			// c.rgb = s.Albedo * _LightColor0.rgb * ramp * (atten * 2);
+			//c.rgb = s.Albedo * _LightColor0.rgb * ramp * (atten * 2);
 			c.rgb = s.Albedo * _LightColor0.rgb * ramp;
 
 			c.a = 0;
