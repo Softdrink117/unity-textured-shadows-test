@@ -5,6 +5,9 @@ Shader "Custom/Dual Cut TS 2" {
 
 		[KeywordEnum(MeshUV, ScreenUV)] _UVMode ("Texture UV Mode", Float) = 0
 
+		_LightScale ("Light Warp Scale", Range(0.0, 1.0)) = 0.5
+		_LightBias ("Light Bias", Range(-1.0, 1.0)) = 0.5
+
 		_Cut1 ("Shadows Cutoff", Range(0.0,1.0)) = 0.0
 		_Cut2 ("Midtones Cutoff", Range(0.0, 1.0)) = 0.5
 		_LineRadius ("Cut Line Radius", Range(0.001, 0.03)) = 0.03
@@ -12,9 +15,9 @@ Shader "Custom/Dual Cut TS 2" {
 		[Toggle(_USE_CUTLINES)] _UseCutlines ("Enable Cut Lines?", Float) = 0
 	
 		[NoScaleOffset] _ShadowTex ("Shadows Tex (R)", 2D) = "black" {}
-		[Gamma] _ShadowTexScale ("Shadow Tex Scale", float) = 1.0
+		_ShadowTexScale ("Shadow Tex Scale", float) = 1.0
 		[NoScaleOffset] _MidtonesTex ("Midtones Tex (R)", 2D) = "gray"
-		[Gamma] _MidtonesTexScale ("Midtones Tex Scale", float) = 1.0
+		_MidtonesTexScale ("Midtones Tex Scale", float) = 1.0
 		_ShadowMaskSpeed ("Shadow Scroll Speed (XY)", Vector) = (1.0, 1.0, 0.0, 0.0)
 	}
 
@@ -26,6 +29,9 @@ Shader "Custom/Dual Cut TS 2" {
 		#pragma surface surf ToonRamp
 		#pragma shader_feature _USE_CUTLINES
 		#pragma multi_compile _UVMODE_MESHUV _UVMODE_SCREENUV
+
+		half _LightScale;
+		half _LightBias;
 
 		half _Cut1;
 		half _Cut2;
@@ -121,7 +127,11 @@ Shader "Custom/Dual Cut TS 2" {
 			#endif
 						
 			// Modified as per user kebrus in this thread: https://forum.unity3d.com/threads/toon-shader-light-shadows.252952/
-			half d = (dot (s.Normal, lightDir)*0.5 + 0.5) * atten;
+			//half d = (dot (s.Normal, lightDir)*0.5 + 0.5) * atten;
+			half d = (dot (s.Normal, lightDir));
+			d *= _LightScale;
+			d += _LightBias;
+			d *= atten;
 
 			d = cuts(d, s);
 
